@@ -65,7 +65,7 @@
           <el-table-column label="操作" align="center" width="180" class-name="small-padding fixed-width">
             <template slot-scope="scope">
               <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)" v-hasPermi="['agent:user:edit']">修改</el-button>
-              <el-button v-if="scope.row.id !== 1" size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)" v-hasPermi="['agent:user:remove']">删除</el-button>
+              <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)" v-hasPermi="['agent:user:remove']">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -89,18 +89,37 @@
         </el-row>
         <el-row>
           <el-col :span="12">
-            <el-form-item label="手机号码" prop="linkMobile">
-              <el-input v-model="form.linkMobile" placeholder="请输入手机号码" maxlength="11" />
+            <el-form-item label="联系号码" prop="linkMobile">
+              <el-input v-model="form.linkMobile" placeholder="请输入联系号码" maxlength="11" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="邮箱" prop="linkEmail">
+            <el-form-item label="联系邮箱" prop="linkEmail">
               <el-input v-model="form.linkEmail" placeholder="请输入邮箱" maxlength="50" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="12">
+            <el-form-item label="联系姓名" prop="linkName">
+              <el-input v-model="form.linkName" placeholder="请输入联系人姓名" maxlength="50" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="联系地址">
+              <el-input v-model="form.agtOfficeAddr" placeholder="请输入联系地址" maxlength="200" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="商户类型" prop="agtType">
+              <el-select v-model="form.agtType" placeholder="请选择">
+                <el-option v-for="dict in agentTypeOptions" :key="dict.dictValue" :label="dict.dictLabel" :value="dict.dictValue"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+           <el-col :span="12">
             <el-form-item label="状态">
               <el-radio-group v-model="form.state">
                 <el-radio v-for="dict in statusOptions" :key="dict.dictValue" :label="dict.dictValue">{{dict.dictLabel}}</el-radio>
@@ -148,9 +167,9 @@
 import {
   agentList,
   getAgent,
-  delUser,
-  addUser,
-  updateUser,
+  delAgent,
+  addAgent,
+  updateAgentInfo,
   exportUser,
   resetUserPwd,
   changeAgentStatus,
@@ -159,6 +178,7 @@ import {
 import { getToken } from "@/utils/auth";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
+import CodeTypeDialogVue from '../tool/build/CodeTypeDialog.vue';
 
 
 export default {
@@ -191,7 +211,9 @@ export default {
       // 商户类型数据字典
       agentTypeOptions: [],
       // 表单参数
-      form: {},
+      form: {
+        
+      },
       defaultProps: {
         children: "children",
         label: "label",
@@ -313,7 +335,8 @@ export default {
         linkName: undefined,
         linkMobile: undefined,
         linkEmail: undefined,
-        state: "0",
+        agtOfficeAddr: undefined,
+        state: '0',
         remark: undefined,
       };
       this.resetForm("form");
@@ -331,7 +354,7 @@ export default {
     },
     // 多选框选中数据
     handleSelectionChange(selection) {
-      this.ids = selection.map((item) => item.userId);
+      this.ids = selection.map((item) => item.id);
       this.single = selection.length != 1;
       this.multiple = !selection.length;
     },
@@ -349,6 +372,9 @@ export default {
       const userId = row.id || this.ids;
       getAgent(userId).then((response) => {
         this.form = response.data;
+        this.form.state = this.form.state+'';
+        this.form.state = this.form.state == null ? "" : this.form.state+'';
+        this.form.agtType = this.form.agtType == null ? "" : this.form.agtType+'';
         this.open = true;
         this.title = "修改用户";
       });
@@ -359,7 +385,7 @@ export default {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           if (this.form.id != undefined) {
-            updateUser(this.form).then((response) => {
+            updateAgentInfo(this.form).then((response) => {
               if (response.code === 200) {
                 this.msgSuccess("修改成功");
                 this.open = false;
@@ -367,7 +393,7 @@ export default {
               }
             });
           } else {
-            addUser(this.form).then((response) => {
+            addAgent(this.form).then((response) => {
               if (response.code === 200) {
                 this.msgSuccess("新增成功");
                 this.open = false;
@@ -391,7 +417,7 @@ export default {
         }
       )
         .then(function () {
-          return delUser(userIds);
+          return delAgent(userIds);
         })
         .then(() => {
           this.getList();

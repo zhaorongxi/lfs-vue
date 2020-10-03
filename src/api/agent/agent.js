@@ -13,15 +13,15 @@ export function agentList(query) {
 // 查询商户详细
 export function getAgent(id) {
   return request({
-    url: '/agent/' + praseStrEmpty(id),
+    url: '/agent/getAgentInfo' + praseStrEmpty(id),
     method: 'get'
   })
 }
 
 // 新增用户
-export function addUser(data) {
+export function addAgent(data) {
   return request({
-    url: '/system/user',
+    url: '/agent/addAgentInfo',
     method: 'post',
     data: data
   })
@@ -37,9 +37,9 @@ export function updateAgentInfo(data) {
 }
 
 // 删除用户
-export function delUser(userId) {
+export function delAgent(userId) {
   return request({
-    url: '/system/user/' + userId,
+    url: '/agent/deleteAgentInfo/' + userId,
     method: 'delete'
   })
 }
