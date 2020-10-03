@@ -2,10 +2,10 @@
 
 ```bash
 # 克隆项目
-git clone https://gitee.com/y_project/RuoYi-Vue
+git clone https://github.com/zhaorongxi/lfs-vue.git
 
 # 进入项目目录
-cd lfs-ui
+cd lfs-vue
 
 # 安装依赖
 npm install
