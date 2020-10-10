@@ -13,7 +13,7 @@ export function agentList(query) {
 // 查询商户详细
 export function getAgent(id) {
   return request({
-    url: '/agent/getAgentInfo' + praseStrEmpty(id),
+    url: '/agent/getAgentInfo/' + praseStrEmpty(id),
     method: 'get'
   })
 }

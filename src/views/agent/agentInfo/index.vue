@@ -174,11 +174,11 @@ import {
   resetUserPwd,
   changeAgentStatus,
   importTemplate,
-} from "@/api/agent/agent";
+} from "@/api/agent/agentInfo";
 import { getToken } from "@/utils/auth";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
-import CodeTypeDialogVue from '../tool/build/CodeTypeDialog.vue';
+import CodeTypeDialogVue from '../../tool/build/CodeTypeDialog.vue';
 
 
 export default {
@@ -361,10 +361,8 @@ export default {
     /** 新增按钮操作 */
     handleAdd() {
       this.reset();
-      getAgent().then((response) => {
-        this.open = true;
-        this.title = "添加用户";
-      });
+      this.open = true;
+      this.title = "添加用户";
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
