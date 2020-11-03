@@ -362,7 +362,7 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加用户";
+      this.title = "添加商户";
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
@@ -374,7 +374,7 @@ export default {
         this.form.state = this.form.state == null ? "" : this.form.state+'';
         this.form.agtType = this.form.agtType == null ? "" : this.form.agtType+'';
         this.open = true;
-        this.title = "修改用户";
+        this.title = "修改商户";
       });
     },
     
