@@ -41,6 +41,7 @@
 
         <el-table v-loading="loading" :data="productList" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="50" align="center" />
+          <el-table-column label="编号" align="center" prop="id" v-if="show" />
           <el-table-column label="产品编号" align="center" prop="productNum" />
           <el-table-column label="产品面额" align="center" prop="tradeFace" :show-overflow-tooltip="true" />
           <el-table-column label="产品类型" align="center" prop="productType" :formatter="productTypeFormat" />
@@ -59,20 +60,29 @@
           </el-table-column>
         </el-table>
 
-        <pagination v-show="total>0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize" @pagination="getList" />
+        <pagination v-show="total>0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize" @pagination="getProductList" />
 
     <!-- 添加或修改参数配置对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-row>
           <el-col :span="12">
-            <el-form-item v-if="form.tradeFace == undefined" label="产品面额" prop="tradeFace">
-              <el-input v-model="form.tradeFace" placeholder="请输入产品面额" />
+            <el-form-item v-if="form.id == undefined" label="产品编码" prop="productNum">
+              <el-input v-model="form.productNum" placeholder="请输入产品编码" />
             </el-form-item>
           </el-col>
+        </el-row>
+        <el-row>
           <el-col :span="12">
-            <el-form-item v-if="form.unit == undefined" label="金额单位" prop="unit">
-              <el-input v-model="form.unit" placeholder="请输入金额单位" />
+            <el-form-item  label="产品金额" prop="tradeFace">
+              <el-input v-model="form.tradeFace" placeholder="请输入产品金额" />
+            </el-form-item>
+          </el-col>
+           <el-col :span="12">
+            <el-form-item  label="金额单位" prop="unit">
+              <el-select v-model="form.unit" placeholder="请选择">
+                <el-option v-for="dict in unitTypeOptions" :key="dict.dictValue" :label="dict.dictLabel" :value="dict.dictValue"></el-option>
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
@@ -85,7 +95,7 @@
             </el-form-item>
           </el-col>
            <el-col :span="12">
-            <el-form-item label="状态">
+            <el-form-item label="产品状态">
               <el-radio-group v-model="form.state">
                 <el-radio v-for="dict in statusOptions" :key="dict.dictValue" :label="dict.dictValue">{{dict.dictLabel}}</el-radio>
               </el-radio-group>
@@ -94,7 +104,7 @@
         </el-row>
         <el-row>
           <el-col :span="24">
-            <el-form-item label="产品详情">
+            <el-form-item label="产品描述">
               <el-input v-model="form.productDetail" type="textarea" placeholder="请输入内容"></el-input>
             </el-form-item>
           </el-col>
@@ -151,6 +161,8 @@ export default {
       statusOptions: [],
       // 产品类型数据字典
       productTypeOptions: [],
+      // 金额类型数据字典
+      unitTypeOptions: [],
       // 表单参数
       form: {
       },
@@ -162,10 +174,10 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        agtName: undefined,
-        linkMobile: undefined,
+        productNum: undefined,
+        productType: undefined,
         state: undefined,
-        agtPhone: undefined
+        tradeFace: undefined
       },
       // 表单校验
       rules: {
@@ -193,11 +205,14 @@ export default {
 
   created() {
     this.getProductList();
-    this.getDicts("sys_normal_disable").then((response) => {
+    this.getDicts("product_status").then((response) => {
       this.statusOptions = response.data;
     });
     this.getDicts("product_type").then((response) => {
       this.productTypeOptions = response.data;
+    });
+    this.getDicts("unit_type").then((response) => {
+      this.unitTypeOptions = response.data;
     });
   },
   methods: {
@@ -242,6 +257,10 @@ export default {
     productTypeFormat(row, column) {
       return this.selectDictLabel(this.productTypeOptions, row.productType);
     },
+    // 金额类型字典防疫
+    unitTypeFormat(row, column) {
+      return this.selectDictLabel(this.unitTypeOptions, row.unit);
+    },
     // 取消按钮
     cancel() {
       this.open = false;
@@ -250,6 +269,7 @@ export default {
     // 表单重置
     reset() {
       this.form = {
+        id: undefined,
         productNum: undefined,
         productType: undefined,
         tradeFace: undefined,
@@ -271,7 +291,7 @@ export default {
     },
     // 多选框选中数据
     handleSelectionChange(selection) {
-      this.ids = selection.map((item) => item.productNum);
+      this.ids = selection.map((item) => item.id);
       this.single = selection.length != 1;
       this.multiple = !selection.length;
     },
@@ -284,12 +304,14 @@ export default {
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset();
-      const productNum = row.productNum || this.productNum;
-      getProductInfo(productNum).then((response) => {
+      const id = row.id || this.ids;
+      getProductInfo(id).then((response) => {
         this.form = response.data;
         this.form.state = this.form.state+'';
         this.form.state = this.form.state == null ? "" : this.form.state+'';
         this.form.productType = this.form.productType == null ? "" : this.form.productType+'';
+        this.form.unit = this.form.unit == null ? "" : this.form.unit+'';
+        this.form.tradeFace = this.form.tradeFace == null ? "" : this.form.tradeFace+'';
         this.open = true;
         this.title = "修改产品";
       });
@@ -299,8 +321,8 @@ export default {
     submitForm: function () {
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          if (this.form.productNum != undefined) {
-            updateAgentInfo(this.form).then((response) => {
+          if (this.form.id != undefined) {
+            updateProductInfo(this.form).then((response) => {
               if (response.code === 200) {
                 this.msgSuccess("修改成功");
                 this.open = false;
@@ -308,7 +330,7 @@ export default {
               }
             });
           } else {
-            addAgent(this.form).then((response) => {
+            addProductInfo(this.form).then((response) => {
               if (response.code === 200) {
                 this.msgSuccess("新增成功");
                 this.open = false;
@@ -321,7 +343,7 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      const productIds = row.productNum || this.productNum;
+      const productIds = row.id || this.ids;
       this.$confirm(
         '是否确认删除产品编码为"' + productIds + '"的数据项?',
         "警告",

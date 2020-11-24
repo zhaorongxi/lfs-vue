@@ -37,9 +37,9 @@ export function updateProductInfo(data) {
 }
 
 // 删除产品
-export function delProductInfo(userId) {
+export function delProductInfo(ids) {
   return request({
-    url: '/product/delProductInfo/' + userId,
+    url: '/product/delProductInfo/' + ids,
     method: 'delete'
   })
 }
