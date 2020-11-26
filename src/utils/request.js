@@ -44,10 +44,10 @@ service.interceptors.response.use(res => {
       })
     } else if (code === 500) {
       Message({
-        message: msg,
-        type: 'error'
+        message: res.data.message,
+        type: 'warning'
       })
-      return Promise.reject(new Error(msg))
+      return Promise.reject('warning')
     } else if (code !== 200) {
       Notification.error({
         title: msg

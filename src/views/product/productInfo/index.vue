@@ -149,7 +149,7 @@ export default {
       showSearch: true,
       // 总条数
       total: 0,
-      // 用户表格数据
+      // 产品表格数据
       productList: null,
       // 弹出层标题
       title: "",
@@ -200,6 +200,7 @@ export default {
           { required: true, message: "金额单位不能为空", trigger: "blur" },
         ],
       },
+      show:false
     };
   },
 
@@ -331,6 +332,7 @@ export default {
             });
           } else {
             addProductInfo(this.form).then((response) => {
+              console.log(response)
               if (response.code === 200) {
                 this.msgSuccess("新增成功");
                 this.open = false;
