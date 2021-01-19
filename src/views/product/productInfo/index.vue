@@ -4,6 +4,9 @@
           <el-form-item label="产品编号" prop="productNum">
             <el-input v-model="queryParams.productNum" placeholder="请输入产品编号" clearable size="small" style="width: 240px" @keyup.enter.native="handleQuery" />
           </el-form-item>
+          <el-form-item label="产品名称" prop="productName">
+            <el-input v-model="queryParams.productName" placeholder="请输入产品名称" clearable size="small" style="width: 240px" @keyup.enter.native="handleQuery" />
+          </el-form-item>
           <el-form-item label="产品面额" prop="tradeFace">
             <el-input v-model="queryParams.tradeFace" placeholder="请输入产品面额" clearable size="small" style="width: 240px" @keyup.enter.native="handleQuery" />
           </el-form-item>
@@ -24,7 +27,7 @@
             <el-button type="cyan" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
             <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
           </el-form-item>
-        </el-form>
+    </el-form>
 
         <el-row :gutter="10" class="mb8">
           <el-col :span="1.5">
@@ -43,6 +46,7 @@
           <el-table-column type="selection" width="50" align="center" />
           <el-table-column label="编号" align="center" prop="id" v-if="show" />
           <el-table-column label="产品编号" align="center" prop="productNum" />
+          <el-table-column label="产品名称" align="center" prop="productName" />
           <el-table-column label="产品面额" align="center" prop="tradeFace" :show-overflow-tooltip="true" />
           <el-table-column label="产品类型" align="center" prop="productType" :formatter="productTypeFormat" />
           <el-table-column label="产品状态" align="center" prop="state" :formatter="statusFormat" />
@@ -69,6 +73,11 @@
           <el-col :span="12">
             <el-form-item v-if="form.id == undefined" label="产品编码" prop="productNum">
               <el-input v-model="form.productNum" placeholder="请输入产品编码" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="产品名称" prop="productName">
+              <el-input v-model="form.productName" placeholder="请输入产品名称" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -175,12 +184,19 @@ export default {
         pageNum: 1,
         pageSize: 10,
         productNum: undefined,
+        productName: undefined,
         productType: undefined,
         state: undefined,
         tradeFace: undefined
       },
       // 表单校验
       rules: {
+        productNum: [
+          { required: true, message: "产品编码不能为空", trigger: "blur" },
+        ],
+        productName: [
+          { required: true, message: "产品名称不能为空", trigger: "blur" },
+        ],
         productType: [
           { required: true, message: "产品类型不能为空", trigger: "blur" },
         ],
@@ -232,7 +248,7 @@ export default {
     handleStatusChange(row) {
       let text = row.state === 0 ? "启用" : "停用";
       this.$confirm(
-        '确认要"' + text + '""' + row.agtName + '"用户吗?',
+        '确认要"' + text + '""' + row.productNum + '"产品吗?',
         "警告",
         {
           confirmButtonText: "确定",
@@ -241,7 +257,7 @@ export default {
         }
       )
         .then(function () {
-          return changeAgentStatus(row.id, row.state);
+          return changeProductStatus(row.id, row.state);
         })
         .then(() => {
           this.msgSuccess(text + "成功");
